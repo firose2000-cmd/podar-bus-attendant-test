@@ -11,7 +11,11 @@ class ServerApi(private val base:String) {
         require(base.startsWith("https://", ignoreCase=true)) {
             "Secure HTTPS school server required. HTTP is disabled to protect student information."
         }
-        require(URL(base).host.isNotBlank()) { "Invalid school server address" }
+        val parsed = URL(base)
+        require(parsed.host.isNotBlank()) { "Invalid school server address" }
+        require(!parsed.authority.contains("@") && parsed.query == null && parsed.ref == null && parsed.path.trim('/').isEmpty()) {
+            "Enter only the HTTPS server origin, without a path, query, or embedded credentials."
+        }
     }
     private var bearer:String=""
     fun restore(token:String){bearer=token}
@@ -33,6 +37,9 @@ class ServerApi(private val base:String) {
         } finally {conn.disconnect()}
     }
     fun login(username:String,password:String):String {
+        require(!URL(base).host.endsWith(".invalid", ignoreCase=true)) {
+            "Placeholder HTTPS address: ask the administrator for the trusted test server address."
+        }
         val j=request("/api/attendant/android/token-login","POST",JSONObject().put("username",username).put("password",password))
         if(!j.optBoolean("ok")||j.optString("access_token").isEmpty())throw IOException("Sign-in was not confirmed")
         bearer=j.getString("access_token")

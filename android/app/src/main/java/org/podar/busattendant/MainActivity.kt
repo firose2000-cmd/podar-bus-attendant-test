@@ -46,7 +46,7 @@ class MainActivity:Activity() {
     private fun clear(){root.removeAllViews()}
     private fun job(work:()->Unit){worker.execute{try{work()}catch(e:Exception){notice("Error: ${e.message}")}}}
     private fun notice(msg:String){runOnUiThread{Toast.makeText(this,msg,Toast.LENGTH_LONG).show()}}
-    private fun home(){clear();label("Podar Bus Attendant — V2.8 TEST")
+    private fun home(){clear();label("Podar Bus Attendant — V3.1 TEST")
         label("Offline-first · Local records survive app and phone restarts")
         if(route.isNotBlank()){
             label("Saved route: $route")
@@ -56,7 +56,7 @@ class MainActivity:Activity() {
         button("Sign in / Download next 3 working days"){loginPage()}
         job{val p=db.dao().pendingCount();val r=db.dao().reviewCount();runOnUiThread{
             // Do not append stale counts to a different screen after navigation.
-            if (root.childCount > 0 && (root.getChildAt(0) as? TextView)?.text?.contains("V2.8 TEST") == true)
+            if (root.childCount > 0 && (root.getChildAt(0) as? TextView)?.text?.contains("V3.1 TEST") == true)
                 label("Pending: $p · Needs review: $r")
         }}
     }
