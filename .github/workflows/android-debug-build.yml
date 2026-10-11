@@ -1,0 +1,43 @@
+name: Android debug APK compile (TEST ONLY)
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'android/**'
+      - '.github/workflows/android-debug-build.yml'
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK 35
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Compile debug APK and capture build log
+        working-directory: android
+        run: |
+          set -o pipefail
+          gradle --no-daemon --stacktrace :app:assembleDebug :app:lintDebug 2>&1 | tee ../android-build.log
+      - name: Upload build log (including failed builds)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-log
+          path: android-build.log
+          if-no-files-found: warn
+      - name: Upload debug APK if compiled
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: attendant-v30-debug-NOT-FOR-SCHOOL
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
